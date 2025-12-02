@@ -10,32 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1 – Checkout Code
+      # Step 1 - Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2 – Install OpenGrep
+      # Step 2 - Install OpenGrep
       - name: Install OpenGrep
-        run: |
-          pip install opengrep
+        uses: opengrep/opengrep-action@v1
 
-      # Step 3 – Run OpenGrep SAST Scan
-      - name: Run SAST Scan using OpenGrep
+      # Step 3 - Run SAST Scan
+      - name: Run OpenGrep Scan
         run: |
-          echo "🔍 Running SAST scan with OpenGrep..."
+          echo "Running SAST scan..."
           opengrep scan \
             --rules opengrep-rules.txt \
             --path . \
             --output results.json
 
-      # Step 4 – Display scan results in pipeline
+      # Step 4 - Show results in pipeline
       - name: Display Scan Results
         run: |
-          echo "📄 Scan Results:"
+          echo "SAST Scan Output:"
           cat results.json
 
-      # Step 5 – Upload scan report (NEW v4)
-      - name: Upload scan report artifact
+      # Step 5 - Upload the scan report
+      - name: Upload Scan Report
         uses: actions/upload-artifact@v4
         with:
           name: sast-report
