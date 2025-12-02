@@ -1,0 +1,42 @@
+name: CI with OpenGrep SAST
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  sast-scan:
+    name: Run SAST with OpenGrep
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 – Checkout Code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2 – Install OpenGrep
+      - name: Install OpenGrep
+        run: |
+          pip install opengrep
+
+      # Step 3 – Run OpenGrep SAST Scan
+      - name: Run SAST Scan using OpenGrep
+        run: |
+          echo "🔍 Running SAST scan with OpenGrep..."
+          opengrep scan \
+            --rules opengrep-rules.txt \
+            --path . \
+            --output results.json
+
+      # Step 4 – Show Results in Pipeline
+      - name: Display Scan Results
+        run: |
+          echo "📄 Scan Results:"
+          cat results.json
+
+      # Step 5 – Upload Scan Results as Artifact (Optional)
+      - name: Upload scan report
+        uses: actions/upload-artifact@v3
+        with:
+          name: sast-report
+          path: results.json
