@@ -1,49 +1,44 @@
-name: CI with OpenGrep SAST
+name: CI with SonarQube SAST
 
 on:
   push:
   pull_request:
 
 jobs:
-  sast-scan:
-    name: Run SAST Scan with OpenGrep
+  sonar-sast:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout Repo
-      - name: Checkout repository
+      # Step 1 - Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Install OpenGrep (Linux binary)
-      - name: Install OpenGrep
-        run: |
-          echo "Downloading OpenGrep..."
-          curl -L -o opengrep.tar.gz https://github.com/opengrep/opengrep/releases/latest/download/opengrep-linux-x86_64.tar.gz
-          mkdir opengrep
-          tar -xzf opengrep.tar.gz -C opengrep
-          sudo mv opengrep/opengrep /usr/local/bin/opengrep
-          chmod +x /usr/local/bin/opengrep
-          echo "OpenGrep Version:"
-          opengrep --version
-
-      # Step 3: Run OpenGrep SAST Scan
-      - name: Run SAST Scan
-        run: |
-          echo "Running SAST scan..."
-          opengrep scan \
-            --path . \
-            --rules opengrep-rules.txt \
-            --output results.json
-
-      # Step 4: Display Results in Pipeline
-      - name: Show SAST Results
-        run: |
-          echo "SAST Scan Output:"
-          cat results.json
-
-      # Step 5: Upload the JSON Result as Artifact
-      - name: Upload SAST Report
-        uses: actions/upload-artifact@v4
+      # Step 2 - Setup Java (SonarQube scanner requires Java)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          name: sast-report
-          path: results.json
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Step 3 - Install Sonar Scanner
+      - name: Install SonarQube Scanner
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Step 4 - Run SAST Scan
+      - name: Run SonarQube SAST Scan
+        run: |
+          echo "Running SAST scan using SonarQube..."
+          sonar-scanner \
+            -Dsonar.projectKey=sample-project \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      # Step 5 - Display Result Summary
+      - name: SonarQube Results URL
+        run: |
+          echo "SonarQube Scan Completed!"
+          echo "View full SAST report in SonarQube dashboard."
