@@ -12,7 +12,7 @@ jobs:
     steps:
       # Step 1 – Checkout Code
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Step 2 – Install OpenGrep
       - name: Install OpenGrep
@@ -28,15 +28,15 @@ jobs:
             --path . \
             --output results.json
 
-      # Step 4 – Show Results in Pipeline
+      # Step 4 – Display scan results in pipeline
       - name: Display Scan Results
         run: |
           echo "📄 Scan Results:"
           cat results.json
 
-      # Step 5 – Upload Scan Results as Artifact (Optional)
-      - name: Upload scan report
-        uses: actions/upload-artifact@v3
+      # Step 5 – Upload scan report (NEW v4)
+      - name: Upload scan report artifact
+        uses: actions/upload-artifact@v4
         with:
           name: sast-report
           path: results.json
