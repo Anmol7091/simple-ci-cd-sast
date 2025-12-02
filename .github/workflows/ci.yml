@@ -1,44 +1,19 @@
-name: CI with SonarQube SAST
-
+name: Build
 on:
   push:
+    branches:
+      - main
   pull_request:
-
+    types: [opened, synchronize, reopened]
 jobs:
-  sonar-sast:
-    runs-on: ubuntu-latest
-
+  sonarqube:
+    name: SonarQube
+    runs-on: windows-latest
     steps:
-      # Step 1 - Checkout Code
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      # Step 2 - Setup Java (SonarQube scanner requires Java)
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # Step 3 - Install Sonar Scanner
-      - name: Install SonarQube Scanner
-        uses: sonarsource/sonarqube-scan-action@master
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      # Step 4 - Run SAST Scan
-      - name: Run SonarQube SAST Scan
-        run: |
-          echo "Running SAST scan using SonarQube..."
-          sonar-scanner \
-            -Dsonar.projectKey=sample-project \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-      # Step 5 - Display Result Summary
-      - name: SonarQube Results URL
-        run: |
-          echo "SonarQube Scan Completed!"
-          echo "View full SAST report in SonarQube dashboard."
